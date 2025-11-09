@@ -1,0 +1,5 @@
+transformers>=4.44
+torch
+scikit-learn
+evaluate
+datasets==3.6.0
