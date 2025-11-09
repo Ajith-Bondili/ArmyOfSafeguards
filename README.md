@@ -45,64 +45,92 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Run the Aggregator
+### 2. Use the Factuality Safeguard
 
-Evaluate text using all available safeguards:
-
-```bash
-python aggregator/aggregator.py "Your text to evaluate here"
-```
-
-### 3. Use Individual Safeguards
-
-Each safeguard can be used independently:
+Currently, only the factuality safeguard is implemented:
 
 ```bash
-# Factuality check
+# Run factuality check
 python factuality/safeguard_factuality.py "The Earth is flat."
 ```
 
-## 📦 Available Safeguards
+### 3. Aggregator (Ready for Team Integration)
 
-### ✅ Factuality Safeguard
-- **Status**: Complete
+The aggregator framework is ready and currently includes the factuality safeguard:
+
+```bash
+# Run aggregator (currently only factuality)
+python aggregator/aggregator.py "Your text to evaluate here"
+```
+
+**Note**: As teammates add their safeguards (toxicity, sexual, jailbreak), they will be automatically included in the aggregator.
+
+## 📦 Safeguards Status
+
+### ✅ Complete
+
+#### Factuality Safeguard (Ajith)
 - **Model**: `ajith-bondili/deberta-v3-factuality-small`
 - **Purpose**: Detects factually incorrect or misleading statements
-- **Developer**: Ajith
-- [View Documentation](factuality/README.md)
+- **Performance**: 54-81% accuracy on out-of-distribution datasets
+- **Documentation**: [factuality/README.md](factuality/README.md)
+- **Tests**: [factuality/tests/README.md](factuality/tests/README.md)
 
-### 🚧 Coming Soon
-- **Toxicity Detection** (Soham)
-- **Sexual Content Detection** (Jian)
-- **Jailbreak Detection** (Tommy)
+### 🚧 In Development
+- **Toxicity Detection** (Soham) - Not yet implemented
+- **Sexual Content Detection** (Jian) - Not yet implemented
+- **Jailbreak Detection** (Tommy) - Not yet implemented
+
+### ✅ Infrastructure Complete
+- **Aggregator Framework**: Ready to integrate multiple safeguards
+- **Testing Template**: Comprehensive test structure for teammates to follow
+- **Documentation Template**: Clear pattern for documenting safeguards
 
 ## 🔧 Usage
 
-### Python API
+### Factuality Safeguard (Currently Available)
 
+**Python API**:
 ```python
-# Use the aggregator for comprehensive evaluation
-from aggregator.aggregator import evaluate_text
-
-result = evaluate_text("Your text here", threshold=0.7)
-print(f"Is Safe: {result['is_safe']}")
-print(f"Flags: {result['flags']}")
-
-# Or use individual safeguards
 from factuality.safeguard_factuality import predict
 
+# Single prediction
 result = predict("The sky is blue.")
-print(f"Label: {result['label']}, Confidence: {result['confidence']:.2%}")
+print(f"Label: {result['label']}")
+print(f"Confidence: {result['confidence']:.2%}")
+
+# Multiple predictions with aggregation
+from factuality.safeguard_factuality import aggregate
+
+predictions = [
+    predict("Water boils at 100°C."),
+    predict("The moon is made of cheese."),
+]
+result = aggregate(predictions)
+print(f"Aggregated: {result['label']} ({result['votes']}/{result['total']} votes)")
 ```
 
-### Command Line
-
+**Command Line**:
 ```bash
-# Run all safeguards
-python aggregator/aggregator.py "Text to check"
-
-# Run specific safeguard
 python factuality/safeguard_factuality.py "Text to check"
+```
+
+### Aggregator (Framework Ready)
+
+**Python API**:
+```python
+from aggregator.aggregator import evaluate_text
+
+# Currently runs factuality safeguard only
+# Will automatically include other safeguards as they're added
+result = evaluate_text("Your text here", threshold=0.7)
+print(f"Is Safe: {result['is_safe']}")
+print(f"Individual Results: {result['individual_results']}")
+```
+
+**Command Line**:
+```bash
+python aggregator/aggregator.py "Text to check"
 ```
 
 ## 🧪 Testing & Evaluation
