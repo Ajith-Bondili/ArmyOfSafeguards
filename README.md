@@ -101,15 +101,53 @@ python aggregator/aggregator.py "Text to check"
 python factuality/safeguard_factuality.py "Text to check"
 ```
 
-## 🧪 Testing
+## 🧪 Testing & Evaluation
+
+Each safeguard has its own test suite in its directory:
 
 ```bash
-# Run all tests
-python tests/test_factuality.py
+# Factuality tests
+python factuality/tests/test_factuality.py
 
 # Quick sanity check
-python tests/quick_test.py
+python factuality/tests/quick_test.py
+
+# Benchmark (prediction distribution)
+python factuality/tests/benchmark_factuality.py
+
+# Full evaluation (accuracy, precision, recall, F1)
+python factuality/tests/evaluate_factuality.py
 ```
+
+### Evaluation Results
+
+**Factuality Safeguard Performance**:
+
+⚠️ **Note**: Model trained on TruthfulQA & FEVER - use OOD datasets for true generalization.
+
+**Out-of-Distribution (True Generalization)**:
+| Dataset | Accuracy | F1-Score | Domain |
+|---------|----------|----------|--------|
+| VitaminC | 54.00% | 36.11% | General claims |
+| Climate-FEVER | 81.00% | - | Climate-specific |
+| LIAR | 81.00% | - | Political statements |
+
+**Training Data (Sanity Check)**:
+| Dataset | Accuracy | F1-Score |
+|---------|----------|----------|
+| FEVER | 84.00% | 78.38% |
+| TruthfulQA | 75.00% | - |
+
+### Benchmark Datasets
+
+The factuality safeguard can be evaluated on:
+- **TruthfulQA** - LLM factuality benchmark
+- **FEVER** - Wikipedia claim verification  
+- **SciFact** - Scientific factuality
+- **VitaminC** - Contradiction-aware claims
+- **Climate-FEVER** - Climate misinformation
+
+See `factuality/tests/` for benchmark and evaluation scripts.
 
 ## 🤝 Contributing
 

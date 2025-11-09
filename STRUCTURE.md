@@ -8,17 +8,26 @@ This document explains the organization of the Army of Safeguards repository.
 ArmyOfSafeguards/
 ├── factuality/              # Factuality checking safeguard (Ajith)
 │   ├── safeguard_factuality.py
-│   └── README.md
+│   ├── README.md
+│   └── tests/               # Factuality-specific tests
+│       ├── test_factuality.py
+│       ├── quick_test.py
+│       └── benchmark_factuality.py
 ├── toxicity/                # Toxicity detection (Soham) - Coming soon
+│   ├── safeguard_toxicity.py
+│   ├── README.md
+│   └── tests/               # Toxicity-specific tests
 ├── sexual/                  # Sexual content detection (Jian) - Coming soon
+│   ├── safeguard_sexual.py
+│   ├── README.md
+│   └── tests/               # Sexual content-specific tests
 ├── jailbreak/               # Jailbreak detection (Tommy) - Coming soon
+│   ├── safeguard_jailbreak.py
+│   ├── README.md
+│   └── tests/               # Jailbreak-specific tests
 ├── aggregator/              # Unified interface for all safeguards
 │   ├── aggregator.py
 │   └── README.md
-├── tests/                   # Test scripts and results
-│   ├── test_factuality.py
-│   ├── quick_test.py
-│   └── TEST_RESULTS.md
 ├── requirements.txt         # Shared dependencies
 ├── .gitignore              # Git ignore rules (includes venv/)
 ├── README.md               # Main project documentation
@@ -31,6 +40,7 @@ ArmyOfSafeguards/
 Each safeguard is self-contained in its own directory with:
 - A main Python file with `predict()` function
 - A README documenting usage and model info
+- A `tests/` subdirectory with module-specific tests
 - Independent from other safeguards
 
 ### 2. Standardized Interface
@@ -76,7 +86,7 @@ The `tests/` directory contains:
 
 4. **Document**: Create `your_safeguard/README.md`
 
-5. **Test**: Add tests in `tests/test_your_safeguard.py`
+5. **Test**: Add tests in `your_safeguard/tests/`
 
 ## Running the System
 
@@ -92,8 +102,10 @@ python aggregator/aggregator.py "Text to check"
 
 ### Tests
 ```bash
-python tests/test_factuality.py
-python tests/quick_test.py
+# Factuality tests
+python factuality/tests/test_factuality.py
+python factuality/tests/quick_test.py
+python factuality/tests/benchmark_factuality.py
 ```
 
 ## Import Paths
@@ -127,7 +139,14 @@ The virtual environment is NOT committed to git. Each developer creates their ow
 ## Phase 1 Deliverable
 
 The complete system will have:
-- ✅ Factuality safeguard (Ajith)
+- ✅ **Factuality safeguard (Ajith) - COMPLETE**
+  - ✅ Model trained and deployed on Hugging Face
+  - ✅ Standardized `predict()` and `aggregate()` functions
+  - ✅ Comprehensive tests and documentation
+  - ✅ Benchmark framework (`factuality/tests/benchmark_factuality.py`)
+  - ✅ Full evaluation with metrics (`factuality/tests/evaluate_factuality.py`)
+  - ✅ Evaluated on TruthfulQA, FEVER, SciFact
+  - ✅ **Results: 84% accuracy on FEVER, 78.38% F1-score**
 - 🚧 Toxicity safeguard (Soham)
 - 🚧 Sexual content safeguard (Jian)
 - 🚧 Jailbreak safeguard (Tommy)

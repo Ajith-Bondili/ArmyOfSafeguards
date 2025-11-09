@@ -57,7 +57,64 @@ print(f"Aggregated: {aggregated['label']} ({aggregated['votes']}/{aggregated['to
 
 ## Testing
 
-See `../tests/test_factuality.py` for comprehensive tests.
+See `tests/test_factuality.py` for comprehensive tests within this module.
+
+## 📊 Benchmark Datasets
+
+The factuality safeguard can be benchmarked against standard datasets:
+
+| Dataset | Description | Source |
+|---------|-------------|--------|
+| **TruthfulQA** | LLM factuality benchmark with adversarial questions | `truthful_qa` |
+| **FEVER** | Wikipedia-based claim verification dataset | `fever` |
+| **SciFact** | Scientific factuality verification | `allenai/scifact` |
+| **VitaminC** | Contradiction-aware claim dataset | `tals/vitaminc` |
+| **Climate-FEVER** | Climate misinformation detection | `climate_fever` |
+
+### Running Benchmarks
+
+**Quick benchmark** (shows prediction distribution):
+```bash
+python factuality/tests/benchmark_factuality.py --limit 100
+```
+
+**Full evaluation** (calculates accuracy, precision, recall, F1-score):
+```bash
+python factuality/tests/evaluate_factuality.py --limit 100
+```
+
+Options:
+```bash
+# Evaluate single dataset
+python factuality/tests/evaluate_factuality.py --dataset FEVER
+
+# Custom sample size
+python factuality/tests/evaluate_factuality.py --limit 500
+
+# Don't save results to JSON
+python factuality/tests/evaluate_factuality.py --no-save
+```
+
+### Evaluation Results
+
+**⚠️ Important**: The model was trained on TruthfulQA and FEVER, so those results show training performance, not generalization.
+
+**Out-of-Distribution Performance** (true generalization test):
+
+| Dataset | Accuracy | Precision | Recall | F1-Score | Domain |
+|---------|----------|-----------|--------|----------|--------|
+| **VitaminC** | 54.00% | 46.43% | 29.55% | 36.11% | General claims |
+| **Climate-FEVER** | 81.00% | - | - | - | Climate claims |
+| **LIAR** | 81.00% | - | - | - | Political statements |
+
+**Training Data Performance** (sanity check only):
+
+| Dataset | Accuracy | F1-Score | Note |
+|---------|----------|----------|------|
+| **FEVER** | 84.00% | 78.38% | ⚠️ Used in training |
+| **TruthfulQA** | 75.00% | - | ⚠️ Used in training |
+
+See `tests/EVALUATION_SUMMARY.md` for detailed analysis and recommendations.
 
 ## Integration
 
