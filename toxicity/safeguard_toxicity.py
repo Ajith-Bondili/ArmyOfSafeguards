@@ -1,37 +1,39 @@
-"""Sexual content safeguard critic powered by DeBERTa-v3."""
+"""Toxicity/racism safeguard critic powered by DeBERTa-v3."""
 from __future__ import annotations
 
 import argparse
 from collections import Counter, defaultdict
+from pathlib import Path
 from typing import Dict, Iterable, Mapping
 
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 # Model configuration - loads from Hugging Face
-MODEL_ID = "faketut/x-sensitive-deberta-binary"
+MODEL_ID = "SohamNagi/tiny-toxicity-classifier"
 
 # Load model from Hugging Face
-_tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+_tokenizer = AutoTokenizer.from_pretrained(MODEL_ID, use_fast=False)
 _model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
 _model.eval()
 
 
 def predict(text: str) -> Dict[str, float]:
-    """Run the sexual content critic on *text* and return the label + confidence.
+    """Run the toxicity critic on *text* and return the label + confidence.
 
     Args:
-        text: Input text to evaluate for sexual/sensitive content
+        text: Input text to evaluate for toxicity/racism
 
     Returns:
         Dictionary with 'label' (str) and 'confidence' (float)
-        - LABEL_0: Safe content (not sensitive)
-        - LABEL_1: Sensitive/sexual content (unsafe)
+        - LABEL_0: Non-toxic/safe content
+        - LABEL_1: Toxic/racist content
     """
     if not isinstance(text, str) or not text.strip():
         raise ValueError("text must be a non-empty string")
 
-    inputs = _tokenizer(text, return_tensors="pt", truncation=True, max_length=128)
+    inputs = _tokenizer(text, return_tensors="pt",
+                        truncation=True, max_length=512)
 
     with torch.no_grad():
         outputs = _model(**inputs)
@@ -45,7 +47,7 @@ def predict(text: str) -> Dict[str, float]:
 
 
 def aggregate(predictions: Iterable[Mapping[str, float]]) -> Dict[str, float]:
-    """Majority-vote aggregation across sexual content critics.
+    """Majority-vote aggregation across toxicity critics.
 
     Args:
         predictions: Iterable of prediction dictionaries from predict()
@@ -87,9 +89,9 @@ def aggregate(predictions: Iterable[Mapping[str, float]]) -> Dict[str, float]:
 
 def _build_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run the sexual content safeguard critic")
+        description="Run the toxicity safeguard critic")
     parser.add_argument("text", nargs="?",
-                        help="Text snippet to evaluate for sexual/sensitive content")
+                        help="Text snippet to evaluate for toxicity/racism")
     return parser
 
 
@@ -103,4 +105,3 @@ if __name__ == "__main__":
     print("Prediction:")
     print(f"  Label: {result['label']}")
     print(f"  Confidence: {result['confidence']:.4f}")
-

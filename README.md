@@ -17,9 +17,21 @@ ArmyOfSafeguards/
 │       ├── benchmark_factuality.py
 │       ├── evaluate_factuality.py
 │       └── EVALUATION_SUMMARY.md
-├── toxicity/                # Toxicity detection (coming soon)
-├── sexual/                  # Sexual content detection (coming soon)
-├── jailbreak/               # Jailbreak attempt detection (coming soon)
+├── toxicity/                # Toxicity detection
+│   ├── safeguard_toxicity.py
+│   ├── README.md
+│   └── tests/               # Toxicity-specific tests
+│       ├── test_toxicity.py
+│       ├── quick_test.py
+│       └── evaluate_toxicity.py
+├── sexual/                  # Sexual content detection
+│   ├── safeguard_sexual.py
+│   ├── README.md
+│   └── tests/               # Sexual content-specific tests
+│       ├── test_sexual.py
+│       ├── quick_test.py
+│       └── evaluate_sexual.py
+├── jailbreak/               # Jailbreak attempt detection
 ├── aggregator/              # Unified interface for all safeguards
 │   ├── aggregator.py
 │   └── README.md
@@ -45,25 +57,30 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Use the Factuality Safeguard
-
-Currently, only the factuality safeguard is implemented:
+### 2. Use Individual Safeguards
 
 ```bash
 # Run factuality check
 python factuality/safeguard_factuality.py "The Earth is flat."
+
+# Run sexual content check
+python sexual/safeguard_sexual.py "Your text to evaluate"
+
+# Run toxicity check
+python toxicity/safeguard_toxicity.py "Your text to evaluate"
+
+# Run jailbreak check
+python jailbreak/safeguard_jailbreak.py "Your text to evaluate"
 ```
 
-### 3. Aggregator (Ready for Team Integration)
+### 3. Aggregator (All Safeguards)
 
-The aggregator framework is ready and currently includes the factuality safeguard:
+The aggregator runs all available safeguards and provides a unified safety assessment:
 
 ```bash
-# Run aggregator (currently only factuality)
+# Run aggregator (includes factuality, sexual, toxicity, jailbreak)
 python aggregator/aggregator.py "Your text to evaluate here"
 ```
-
-**Note**: As teammates add their safeguards (toxicity, sexual, jailbreak), they will be automatically included in the aggregator.
 
 ## 📦 Safeguards Status
 
@@ -76,10 +93,27 @@ python aggregator/aggregator.py "Your text to evaluate here"
 - **Documentation**: [factuality/README.md](factuality/README.md)
 - **Tests**: [factuality/tests/README.md](factuality/tests/README.md)
 
+#### Sexual Content Safeguard (Jian)
+- **Model**: `faketut/x-sensitive-deberta-binary`
+- **Purpose**: Detects sexual and sensitive content (profanity, self-harm, drugs, etc.)
+- **Performance**: 82.6% accuracy, 82.9% F1-score on test set
+- **Documentation**: [sexual/README.md](sexual/README.md)
+- **Tests**: [sexual/tests/README.md](sexual/tests/README.md)
+
+#### Toxicity Safeguard (Soham)
+- **Model**: `SohamNagi/tiny-toxicity-classifier`
+- **Purpose**: Detects toxic, racist, and hateful content
+- **Performance**: 79% accuracy on ToxiGen test set
+- **Documentation**: [toxicity/README.md](toxicity/README.md)
+- **Tests**: [toxicity/tests/README.md](toxicity/tests/README.md)
+
+#### Jailbreak Safeguard (Tommy)
+- **Model**: `tommypang04/finetuned-model-jailbrak`
+- **Purpose**: Detects jailbreak attempts in prompts
+- **Documentation**: [jailbreak/safeguard_jailbreak.py](jailbreak/safeguard_jailbreak.py)
+
 ### 🚧 In Development
-- **Toxicity Detection** (Soham) - Not yet implemented
-- **Sexual Content Detection** (Jian) - Not yet implemented
-- **Jailbreak Detection** (Tommy) - Not yet implemented
+- Additional evaluation datasets and metrics
 
 ### ✅ Infrastructure Complete
 - **Aggregator Framework**: Ready to integrate multiple safeguards
@@ -88,41 +122,47 @@ python aggregator/aggregator.py "Your text to evaluate here"
 
 ## 🔧 Usage
 
-### Factuality Safeguard (Currently Available)
+### Individual Safeguards
 
-**Python API**:
+**Factuality Safeguard**:
 ```python
 from factuality.safeguard_factuality import predict
 
-# Single prediction
 result = predict("The sky is blue.")
-print(f"Label: {result['label']}")
-print(f"Confidence: {result['confidence']:.2%}")
-
-# Multiple predictions with aggregation
-from factuality.safeguard_factuality import aggregate
-
-predictions = [
-    predict("Water boils at 100°C."),
-    predict("The moon is made of cheese."),
-]
-result = aggregate(predictions)
-print(f"Aggregated: {result['label']} ({result['votes']}/{result['total']} votes)")
+print(f"Label: {result['label']}, Confidence: {result['confidence']:.2%}")
 ```
 
-**Command Line**:
-```bash
-python factuality/safeguard_factuality.py "Text to check"
+**Sexual Content Safeguard**:
+```python
+from sexual.safeguard_sexual import predict
+
+result = predict("This is a normal sentence.")
+print(f"Label: {result['label']}, Confidence: {result['confidence']:.2%}")
 ```
 
-### Aggregator (Framework Ready)
+**Toxicity Safeguard**:
+```python
+from toxicity.safeguard_toxicity import predict
+
+result = predict("Hello, how are you?")
+print(f"Label: {result['label']}, Confidence: {result['confidence']:.2%}")
+```
+
+**Jailbreak Safeguard**:
+```python
+from jailbreak.safeguard_jailbreak import predict
+
+result = predict("Your prompt here")
+print(f"Label: {result['label']}, Confidence: {result['confidence']:.2%}")
+```
+
+### Aggregator (All Safeguards)
 
 **Python API**:
 ```python
 from aggregator.aggregator import evaluate_text
 
-# Currently runs factuality safeguard only
-# Will automatically include other safeguards as they're added
+# Runs all available safeguards (factuality, sexual, toxicity, jailbreak)
 result = evaluate_text("Your text here", threshold=0.7)
 print(f"Is Safe: {result['is_safe']}")
 print(f"Individual Results: {result['individual_results']}")
@@ -139,16 +179,22 @@ Each safeguard has its own test suite in its directory:
 
 ```bash
 # Factuality tests
-python factuality/tests/test_factuality.py
-
-# Quick sanity check
 python factuality/tests/quick_test.py
-
-# Benchmark (prediction distribution)
-python factuality/tests/benchmark_factuality.py
-
-# Full evaluation (accuracy, precision, recall, F1)
+python factuality/tests/test_factuality.py
 python factuality/tests/evaluate_factuality.py
+
+# Sexual content tests
+python sexual/tests/quick_test.py
+python sexual/tests/test_sexual.py
+python sexual/tests/evaluate_sexual.py --limit 100
+
+# Toxicity tests
+python toxicity/tests/quick_test.py
+python toxicity/tests/test_toxicity.py
+python toxicity/tests/evaluate_toxicity.py --limit 100
+
+# Jailbreak tests
+python jailbreak/safeguard_jailbreak.py "Test prompt"
 ```
 
 ### Evaluation Results
@@ -170,16 +216,35 @@ python factuality/tests/evaluate_factuality.py
 | FEVER | 84.00% | 78.38% |
 | TruthfulQA | 75.00% | - |
 
+**Sexual Content Safeguard Performance**:
+
+⚠️ **Note**: Model trained on CardiffNLP x_sensitive dataset.
+
+**Test Set Performance**:
+| Metric | Score |
+|--------|-------|
+| Accuracy | 82.6% |
+| F1-Score | 82.9% |
+
+**Toxicity Safeguard Performance**:
+
+⚠️ **Note**: Model trained on ToxiGen dataset.
+
+**ToxiGen Test Set**:
+| Metric | Score |
+|--------|-------|
+| Accuracy | 79.00% |
+| Precision | 75.00% |
+| Recall | 69.23% |
+| F1-Score | 72.00% |
+
 ### Benchmark Datasets
 
-The factuality safeguard can be evaluated on:
-- **TruthfulQA** - LLM factuality benchmark
-- **FEVER** - Wikipedia claim verification  
-- **SciFact** - Scientific factuality
-- **VitaminC** - Contradiction-aware claims
-- **Climate-FEVER** - Climate misinformation
+- **Factuality**: TruthfulQA, FEVER, SciFact, VitaminC, Climate-FEVER
+- **Sexual Content**: CardiffNLP x_sensitive
+- **Toxicity**: ToxiGen, hate_speech18, civil_comments
 
-See `factuality/tests/` for benchmark and evaluation scripts.
+See individual safeguard test directories for evaluation scripts.
 
 ## 🤝 Contributing
 

@@ -1,15 +1,14 @@
-"""Comprehensive unit tests for the sexual content safeguard."""
+"""Comprehensive unit tests for the toxicity safeguard."""
+from toxicity.safeguard_toxicity import predict, aggregate
 import sys
 from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from sexual.safeguard_sexual import predict, aggregate
-
 
 def test_safe_content():
-    """Test predictions on safe, non-sensitive content."""
+    """Test predictions on safe, non-toxic content."""
     print("\n" + "=" * 60)
     print("TEST 1: Safe Content Predictions")
     print("=" * 60)
@@ -28,7 +27,7 @@ def test_safe_content():
         label = result['label']
         confidence = result['confidence']
 
-        # LABEL_0 should be safe/non-sensitive
+        # LABEL_0 should be safe/non-toxic
         is_safe = label == 'LABEL_0'
         status = "✓ PASS" if is_safe else "✗ FAIL"
 
@@ -41,35 +40,35 @@ def test_safe_content():
     return passed == len(safe_examples)
 
 
-def test_sensitive_content():
-    """Test predictions on sensitive/sexual content."""
+def test_toxic_content():
+    """Test predictions on toxic/racist content."""
     print("\n" + "=" * 60)
-    print("TEST 2: Sensitive Content Predictions")
+    print("TEST 2: Toxic Content Predictions")
     print("=" * 60)
 
-    sensitive_examples = [
-        "This is so fucking cool!",
-        "That's a damn good idea.",
-        "I can't believe this shit.",
+    toxic_examples = [
+        "I hate those people, they are all terrible.",
+        "You are worthless and stupid.",
+        "All [group] are criminals and should be banned.",
     ]
 
     passed = 0
-    for text in sensitive_examples:
+    for text in toxic_examples:
         result = predict(text)
         label = result['label']
         confidence = result['confidence']
 
-        # LABEL_1 should be sensitive/harmful
-        is_sensitive = label == 'LABEL_1'
-        status = "✓ PASS" if is_sensitive else "✗ FAIL"
+        # LABEL_1 should be toxic/harmful
+        is_toxic = label == 'LABEL_1'
+        status = "✓ PASS" if is_toxic else "✗ FAIL"
 
         print(f"{status}: '{text[:50]}...' → {label} ({confidence:.2%})")
 
-        if is_sensitive:
+        if is_toxic:
             passed += 1
 
-    print(f"\nPassed: {passed}/{len(sensitive_examples)}")
-    return passed == len(sensitive_examples)
+    print(f"\nPassed: {passed}/{len(toxic_examples)}")
+    return passed == len(toxic_examples)
 
 
 def test_aggregation():
@@ -174,7 +173,7 @@ def test_confidence_scores():
 
     test_texts = [
         "Hello, how are you?",
-        "This is so fucking cool!",
+        "I hate everything about this.",
         "The weather is nice today.",
     ]
 
@@ -199,12 +198,12 @@ def test_confidence_scores():
 def main():
     """Run all tests."""
     print("\n" + "=" * 60)
-    print("SEXUAL CONTENT SAFEGUARD - COMPREHENSIVE UNIT TESTS")
+    print("TOXICITY SAFEGUARD - COMPREHENSIVE UNIT TESTS")
     print("=" * 60)
 
     results = []
     results.append(("Safe Content", test_safe_content()))
-    results.append(("Sensitive Content", test_sensitive_content()))
+    results.append(("Toxic Content", test_toxic_content()))
     results.append(("Aggregation", test_aggregation()))
     results.append(("Edge Cases", test_edge_cases()))
     results.append(("Confidence Scores", test_confidence_scores()))

@@ -1,19 +1,18 @@
-"""Full evaluation of the sexual content safeguard with accuracy metrics.
+"""Full evaluation of the toxicity safeguard with accuracy metrics.
 
 This script calculates accuracy, precision, recall, and F1-score on
-the x_sensitive dataset. Results are optionally saved to JSON.
+standard benchmark datasets. Results are optionally saved to JSON.
 """
+from toxicity.safeguard_toxicity import predict, MODEL_ID
 import sys
 import json
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from sexual.safeguard_sexual import predict, MODEL_ID
 
 
 # Try to import required packages
@@ -32,22 +31,70 @@ except ImportError as e:
 
 # Evaluation datasets with label mappings
 BENCHMARKS = {
-    "x_sensitive": {
-        "dataset": "cardiffnlp/x_sensitive",
-        "subset": None,
+    "toxigen": {
+        "dataset": "toxigen/toxigen-data",
+        "subset": "annotated",
         "split": "test",
         "text_field": "text",
-        "label_keys": ['conflictual', 'drugs', 'profanity', 'selfharm', 'sex', 'spam'],
-        "description": "CardiffNLP x_sensitive dataset",
+        "label_field": "toxicity_human",
+        "label_mapping": lambda x: "LABEL_1" if x >= 3 else "LABEL_0",  # Threshold at 3
+        "description": "ToxiGen annotated dataset",
         "note": "⚠️ TRAINING DATA - Results show training performance, not generalization",
+    },
+    "hate_speech18": {
+        "dataset": "hate_speech18",
+        "subset": None,
+        "split": "train",
+        "text_field": "text",
+        "label_field": "label",
+        "label_mapping": {
+            0: "LABEL_0",  # No hate speech → safe
+            1: "LABEL_1",  # Hate speech → toxic
+            2: "LABEL_1",  # Offensive language → toxic
+        },
+        "description": "Twitter hate speech dataset",
+        "note": "Out-of-distribution evaluation",
+    },
+    "civil_comments": {
+        "dataset": "google/civil_comments",
+        "subset": None,
+        "split": "train",
+        "text_field": "text",
+        "label_field": "toxicity",
+        "label_mapping": lambda x: "LABEL_1" if x >= 0.5 else "LABEL_0",  # Threshold at 0.5
+        "description": "Civil Comments toxicity dataset",
+        "note": "Out-of-distribution evaluation",
+    },
+    "tweets_hate_speech_detection": {
+        "dataset": "tweets_hate_speech_detection",
+        "subset": None,
+        "split": "train",
+        "text_field": "tweet",
+        "label_field": "label",
+        "label_mapping": {
+            0: "LABEL_0",  # No hate → safe
+            1: "LABEL_1",  # Hate → toxic
+        },
+        "description": "Hate speech detection on tweets",
+        "note": "Out-of-distribution evaluation",
     },
 }
 
 
-def collapse_to_binary(example, label_keys):
-    """Collapse multi-label to binary label."""
-    binary_label = 1 if any(example[key] == 1 for key in label_keys) else 0
-    return {"true_label": "LABEL_1" if binary_label == 1 else "LABEL_0"}
+def map_label(raw_label: Any, mapping: Any) -> str:
+    """Map dataset label to model label format.
+
+    Args:
+        raw_label: Original label from dataset
+        mapping: Either dict mapping or callable function
+
+    Returns:
+        Mapped label string (e.g., "LABEL_0" or "LABEL_1")
+    """
+    if callable(mapping):
+        return mapping(raw_label)
+    else:
+        return mapping.get(raw_label, "LABEL_0")
 
 
 def evaluate_dataset(
@@ -91,10 +138,6 @@ def evaluate_dataset(
         print(f"Error loading dataset: {e}")
         return {"error": str(e)}
 
-    # Collapse to binary labels
-    label_keys = config['label_keys']
-    dataset = dataset.map(lambda x: collapse_to_binary(x, label_keys))
-
     # Limit number of examples
     if len(dataset) > limit:
         print(
@@ -110,16 +153,21 @@ def evaluate_dataset(
     confidences: List[float] = []
 
     text_field = config['text_field']
+    label_field = config['label_field']
+    label_mapping = config['label_mapping']
 
     for i, example in enumerate(dataset):
         if (i + 1) % 10 == 0:
             print(f"  Processed {i + 1}/{len(dataset)}...")
 
         text = example[text_field]
-        true_label = example['true_label']
+        raw_label = example[label_field]
 
         if not text or not isinstance(text, str):
             continue
+
+        # Map ground truth label
+        true_label = map_label(raw_label, label_mapping)
 
         try:
             result = predict(text)
@@ -216,7 +264,7 @@ def save_results(results: Dict[str, Any], dataset_name: str):
 def main():
     """Run evaluation on all or specified datasets."""
     parser = argparse.ArgumentParser(
-        description="Evaluate sexual content safeguard with full metrics"
+        description="Evaluate toxicity safeguard with full metrics"
     )
     parser.add_argument(
         "--dataset",
@@ -239,7 +287,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print("SEXUAL CONTENT SAFEGUARD EVALUATION")
+    print("TOXICITY SAFEGUARD EVALUATION")
     print(f"Model: {MODEL_ID}")
     print("=" * 60)
 

@@ -1,81 +1,92 @@
-# Sexual Content Safeguard Tests
+# Sexual Content Safeguard - Tests
 
-This directory contains basic test scripts for the sexual content safeguard module.
+Test suite for the sexual content safeguard classifier.
 
 ## Test Files
 
 ### `quick_test.py`
-Quick sanity check to verify the safeguard is working correctly.
-- Tests basic safe and sensitive content detection
-- Fast execution (~5 seconds)
+**Quick sanity check** (~5 seconds)
 
-**Usage:**
 ```bash
 python sexual/tests/quick_test.py
 ```
+
+Tests 3 examples to verify the model loads and produces predictions.
+
+---
 
 ### `test_sexual.py`
-Basic unit tests for the sexual content safeguard.
-- Basic prediction tests on safe and sensitive content
-- Edge case handling (empty strings, long text)
+**Comprehensive unit tests** (~30 seconds)
 
-**Usage:**
 ```bash
 python sexual/tests/test_sexual.py
 ```
 
-### `benchmark_sexual.py`
-Basic benchmark evaluation on the x_sensitive dataset.
-- Evaluates model performance on 500 test samples
-- Calculates accuracy, precision, recall, F1-score
-- Provides confusion matrix
+Tests:
+- Safe and sensitive content predictions
+- Aggregation (majority voting)
+- Edge cases (empty strings, long text)
+- Confidence score validation
 
-**Usage:**
-```bash
-python sexual/tests/benchmark_sexual.py
-```
+---
 
 ### `evaluate_sexual.py`
-Basic evaluation with metrics.
-- Complete evaluation on full test set
-- Saves results to JSON file
+**Full evaluation with metrics**
 
-**Usage:**
 ```bash
-python sexual/tests/evaluate_sexual.py
+# Evaluate on all datasets
+python sexual/tests/evaluate_sexual.py --limit 100
+
+# Single dataset
+python sexual/tests/evaluate_sexual.py --dataset x_sensitive --limit 100
+
+# Don't save results
+python sexual/tests/evaluate_sexual.py --no-save
 ```
 
-## Expected Performance
+Calculates:
+- Accuracy, Precision, Recall, F1-score
+- Per-class metrics
+- Saves results to `evaluation_*.json`
 
-Based on training results:
-- **Test Accuracy**: ~82.6%
-- **Test F1-Score**: ~82.9%
+**Available Datasets**:
+| Dataset | Type | Description |
+|---------|------|-------------|
+| `x_sensitive` | Training | ⚠️ Training data sanity check |
 
-## Running Tests
+---
+
+## Quick Start
 
 ```bash
-# Quick test (recommended)
+# 1. Quick sanity check
 python sexual/tests/quick_test.py
 
-# Basic tests
+# 2. Full unit tests
 python sexual/tests/test_sexual.py
 
-# Benchmark (500 samples)
-python sexual/tests/benchmark_sexual.py
-
-# Full evaluation
-python sexual/tests/evaluate_sexual.py
+# 3. Evaluate on training data (sanity check)
+python sexual/tests/evaluate_sexual.py --dataset x_sensitive --limit 100
 ```
 
-## Test Data
+## Performance Results
 
-Tests use the `cardiffnlp/x_sensitive` dataset, which includes:
-- Sexual content
-- Profanity
-- Self-harm references
-- Drug-related content
-- Conflictual content
-- Spam
+### x_sensitive Test Set (Training Data - Sanity Check)
 
-The dataset is automatically downloaded from Hugging Face when running the tests.
+⚠️ **Note**: x_sensitive was used for training. Results show training performance only.
 
+| Metric | Score |
+|--------|-------|
+| Accuracy | 82.6% |
+| Precision | - |
+| Recall | - |
+| F1-Score | 82.9% |
+
+### Out-of-Distribution
+
+Run evaluations to get OOD performance:
+```bash
+python sexual/tests/evaluate_sexual.py --dataset x_sensitive
+```
+
+Results saved to `evaluation_*.json` files.
