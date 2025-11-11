@@ -44,3 +44,14 @@ Thumbs.db
 *.bin
 
 .cursorrules.mdc
+CLAUDE.md
+# Ignore local model files (model is fetched from Hugging Face)
+model/
+
+# Ignore evaluation results (can be regenerated)
+tests/evaluation_*.json
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
