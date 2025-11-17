@@ -5,3 +5,7 @@ evaluate
 datasets==3.6.0
 huggingface_hub
 safetensors
+datasets
+scikit-learn
+tqdm
+pandas
