@@ -4,6 +4,7 @@
 
 A modular collection of AI safety safeguards for detecting various types of harmful or problematic content.
 
+
 ## 🏗️ Project Structure
 
 ```
