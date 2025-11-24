@@ -506,7 +506,7 @@ def load_benchmark_dataset(benchmark_name: str, limit: Optional[int] = None, hf_
 def evaluate_on_benchmark(
     benchmark_name: str,
     limit: Optional[int] = None,
-    threshold: float = 0.7,
+    threshold: float = 0.5,
     verbose: bool = True,
     hf_token: Optional[str] = None,
     config_override: Optional[str] = None
@@ -684,7 +684,7 @@ def evaluate_on_benchmark(
 
 def run_all_benchmarks(
     limit: Optional[int] = None,
-    threshold: float = 0.7,
+    threshold: float = 0.5,
     save_results: bool = True,
     hf_token: Optional[str] = None
 ) -> List[Dict[str, Any]]:
@@ -817,8 +817,8 @@ Examples:
     parser.add_argument(
         "--threshold",
         type=float,
-        default=0.7,
-        help="Confidence threshold for flagging (default: 0.7)"
+        default=0.5,
+        help="Confidence threshold for flagging (default: 0.5)"
     )
     parser.add_argument(
         "--no-save",
